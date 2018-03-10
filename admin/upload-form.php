@@ -23,6 +23,18 @@
                     </td>
                 </tr>
                 <tr>
+                    <td colspan="2">
+                        <label for="post_status">
+                            Status do Post
+                        </label>
+                        <select name="post_status" id="post_status" />
+                            <option value="publish">Publicado</option>
+                            <option value="draft">Rascunho</option>
+                            <option value="pending">Pendente</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
                     <td><label  for="file">Arquivo para importar (Extensões: <?php echo implode(', ', ImportPost::$extensions); ?>)</label></td>
                     <td><input type="file" name="file" id="file" /></td>
                 </tr>

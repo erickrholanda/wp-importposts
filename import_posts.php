@@ -24,6 +24,7 @@ class ImportPost {
     public static $reset;
     public static $header;
     public static $post_type = 'property';
+    public static $post_status;
     public static $messages = array();
     public static $columns = array();
     public static $extensions = array();
@@ -141,6 +142,7 @@ class ImportPost {
             self::$reset = isset($_POST['reset'])?$_POST['reset'] : false;
             self::$header = isset($_POST['header'])?$_POST['header'] : false;
             self::$post_type = isset($_POST['post_type'])?$_POST['post_type'] : false;
+            self::$post_status = isset($_POST['post_status'])?$_POST['post_status'] : false;
 
             if (self::validate_form_update_submit()) {
 
@@ -202,8 +204,8 @@ class ImportPost {
                 }
                 $post_values = array(
                     'post_title' => $values[2],
-                    'post_content' => $values[2] . "<br />" . $values[3],
-                    'post_status' => 'publish',
+                    'post_content' => $values[2],
+                    'post_status' => self::$post_status,
                     'post_type' => self::$post_type,
                     'meta_input' => array(
                         'price' => array(
