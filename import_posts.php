@@ -101,6 +101,9 @@ class ImportPost {
 
     public static function validate_form_update_submit() {
         $error = count(self::$messages);
+        if (!self::$post_status) {
+            self::$messages[] = 'Posts Status é obrigatório.';
+        }
         if (self::$file) {
            $extension = self::get_file_extension();
             if (!in_array(strtolower($extension), self::$extensions )) {
@@ -182,6 +185,7 @@ class ImportPost {
             foreach($content as $line => $values) {
                 if (self::$header && $line == 1) continue;
                 $values = array_values($values);
+                
                 $data = $values[4];
                 if ($data) {
                     if (strpos($data, '-') !== false) {
@@ -227,12 +231,17 @@ class ImportPost {
                         )
                 );
                
-                $return = self::create_post($post_values);
-                if (is_wp_error($return)) {
+                $post = self::create_post($post_values);
+                if (is_wp_error($post)) {
                     $error++;
-                    self::$messages[] = 'Linha #' .$line . ': ' . $return->get_error_message;
+                    self::$messages[] = 'Linha #' .$line . ': ' . $post->get_error_message;
                 }
                 else {
+                    if(isset($values[6]) && $values[6]) {
+                        $image_url = $values[6];
+                        self::insert_image_thumbnail($image_url, $post);
+                    }
+
                     $success++;
                 }
             }
@@ -351,6 +360,52 @@ class ImportPost {
         print "<pre>";
         var_dump($value);
         print "</pre>";
+    }
+
+    // public static function save_image_thumbnail($image_url) {
+
+    // }
+
+    public static function get_image_id($image_url) {
+        global $wpdb;
+        $attachment = $wpdb->get_col($wpdb->prepare("SELECT ID FROM $wpdb->posts WHERE guid='%s';", $image_url )); 
+        return $attachment && $attachment[0]; 
+    }
+
+    public static function insert_image_thumbnail($image_url, $post_id) {
+        // $image = get_image_id($image_url);
+        // if ($image) {
+        //     self::pre($image);
+        //     die();
+        // }
+        // else {
+        $upload_dir = wp_upload_dir();
+        $image_data = file_get_contents($image_url);
+        $filename = basename($image_url);
+
+        if(wp_mkdir_p($upload_dir['path']))     
+            $file = $upload_dir['path'] . '/' . $filename;
+        else
+            $file = $upload_dir['basedir'] . '/' . $filename;
+        // }
+        file_put_contents($file, $image_data);
+
+        $wp_filetype = wp_check_filetype($filename, null );
+
+        $attachment = array(
+            'post_mime_type' => $wp_filetype['type'],
+            'post_title' => sanitize_file_name($filename),
+            'post_content' => '',
+            'post_status' => 'inherit'
+        );
+
+        $attach_id = wp_insert_attachment( $attachment, $file, $post_id );
+
+        require_once(ABSPATH . 'wp-admin/includes/image.php');
+
+        $attach_data = wp_generate_attachment_metadata( $attach_id, $file );
+        $res1= wp_update_attachment_metadata( $attach_id, $attach_data );
+        $res2= set_post_thumbnail( $post_id, $attach_id );
     }
 }
 

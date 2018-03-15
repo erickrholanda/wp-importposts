@@ -6,14 +6,14 @@
         <input type="hidden" name="post_type" value="<?php print ImportPost::$post_type; ?>" />
         <table>
             <tbody>
-                <tr>
+                <!-- <tr>
                     <td colspan="2">
                     <label  for="reset">
                         <input type="checkbox" name="reset" id="reset" />
                         Resetar posts antes de importar
                     </label>
                     </td>
-                </tr>
+                </tr> -->
                 <tr>
                     <td colspan="2">
                     <label  for="header">
@@ -28,6 +28,7 @@
                             Status do Post
                         </label>
                         <select name="post_status" id="post_status" />
+                            <option value="">Selecione status</option>
                             <option value="publish">Publicado</option>
                             <option value="draft">Rascunho</option>
                             <option value="pending">Pendente</option>
